@@ -1,0 +1,10 @@
+# список внешних зависимостей
+
+# Команда для установки зависимостей
+# $ pip install -r requirements.txt
+
+# Для взаимодействия с Telegram API есть несколько готовых модулей. Самый простой из них — Telebot.
+# Чтобы установить его, набери: pip install pytelegrambotapi
+
+aiogram
+schedule
