@@ -66,6 +66,97 @@ async def on_startup(_):  # функция принимает (_) аргумен
     print("Бот работает")
 
 
+start_index = 0  # с этого рецепта начинается поиск
+
+
+def get_recept_list(start_ind=0):
+    """
+    По индексу файла с рецептами
+    :return: возвращает список рецептов
+    """
+    return r_list[start_ind]
+
+
+def search_recipe(question):
+    """
+    Ищет совпадения слов из запроса пользователя в списке рецептов.
+    :param question: Список слов запроса пользователя.
+    :return: Искомый рецепт.
+    """
+    question_index = len(question)  # Количество слов в запросе юзера
+    answer = ''
+    answer_count = 0
+    global start_index
+
+    # print(start_index)  # проверка работоспособности - выводит номер списка с рецептами
+
+    for index in range(start_index, len(r_list)):  # перебираем файлы от старта до конца
+
+        for recipe in get_recept_list(index):  # список с рецептами от стартового списка до конца
+            counter = 0
+            for word in question:
+                if "РЕЦЕПТ:" in recipe:  # если слово "РЕЦЕПТ" есть
+                    recipe_low = str(
+                        recipe[:recipe.index("РЕЦЕПТ:")].lower())  # берем только название рецепта и ингредиенты
+                    if word in recipe_low:
+                        counter += 1
+            if answer_count < counter:  # если число совпадений слов больше предыдущего
+                answer_count = counter
+                answer = recipe  # принимаем рецепт как промежуточный ответ
+            if answer_count == question_index:  # количество совпавших слов соответствует запросу
+                start_index = index  # новый стартовый индекс
+                return answer  # полное совпадение
+    if start_index == 0:  # если поиск шел с самого начала
+        return answer
+    # если в одной половине списка нет, то искать в другой
+    for index in range(0, start_index):
+        for recipe in get_recept_list(index):  # список с рецептами от стартового списка до конца
+            counter = 0
+            for word in question:
+                if "РЕЦЕПТ:" in recipe:  # если слово "РЕЦЕПТ" есть
+                    recipe_low = str(
+                        recipe[:recipe.index("РЕЦЕПТ:")].lower())  # берем только название рецепта и ингредиенты
+                    if word in recipe_low:
+                        counter += 1
+            if answer_count < counter:  # если число совпадений слов больше предыдущего
+                answer_count = counter
+                answer = recipe  # принимаем рецепт как промежуточный ответ
+            if answer_count == question_index:  # количество совпавших слов соответствует запросу
+                start_index = index  # новый стартовый индекс
+                return answer  # полное совпадение
+    return answer  # выдаем что нашли
+
+
+def get_question(question_in):
+    """
+    Формируем запрос юзера в виде ДВУХ списков (убираем предлоги "len(a) > 2"), уменьшаем регистр, заменяем часть букв на английские, обрезаем окончания у слов
+    :param question_in: строка запроса от юзера
+    :return: список слов для поиска [с заменой на английские буквы], [только русские буквы]
+    """
+    ru_question = [a.lower() for a in question_in.text.split() if len(a) > 2]
+    # словарь 'русская буква':'латинская буква'
+    d_chars = {'а': 'a', 'е': 'e', 'о': 'o', 'с': 'c', 'х': 'x'}
+
+    eng_question = []
+    for word in ru_question:
+        for char in d_chars:
+            if char == word[0]:  # если первая буква в рецепте была заглавная, то она может быть и русской!!!
+                first_char = char  # первая буква
+                word2 = word[1:]  # остальная часть слова
+                for char in d_chars:
+                    if char in word2:
+                        while char in word2:
+                            word2 = word2.replace(char, d_chars[char])
+                word2 = first_char + word2
+                eng_question.append(word2[:-1])  # добавляем аналог слова с первой русской буквой
+            if char in word:
+                while char in word:
+                    word = word.replace(char, d_chars[char])
+        word = word.lower()  # уменьшаем регистр, чтобы не зависеть от него в поиске
+        eng_question.append(word[:-1])  # обрезаем окончание у слов "яблоки" -> "яблок"
+    return eng_question, ru_question
+
+
 # Команда start
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
@@ -81,6 +172,43 @@ async def start(message: types.Message):
     await bot.send_message(message.chat.id,
                            'Нажми: \n"Рецепт", чтобы получить случайный рецепт или "Пирог из яблок", если Вы ищете какое-то конкретное блюдо',
                            reply_markup=markup)
+
+
+# Получает сообщение от юзера и формирует ему ответ
+@dp.message_handler(content_types=["text"])
+async def handle_text(message: types.Message):
+    # Формируем запрос юзера в виде списка (убираем предлоги) и уменьшаем регистр [английские буквы], [русские]
+    user_question_en, user_question_ru = get_question(message)
+    promo = random.choice(prom_list)  # реклама
+
+    # Если сообщение от юзера содержит слово "рецепт" (!рецепт содержит английские буквы), выдает ему случайный рецепт
+    if 'рецепт' in user_question_ru:  # правильные запросы "Рецепт" и "рецепт"
+        recipes = random.choice(r_list)  # выбираем случайный список рецептов из списка рецептов
+
+        # print(r_list.index(recipes))  # выводит номер списка с рецептами для проверки
+
+        answer = random.choice(recipes)  # случайный рецепт
+        if len(answer) > 10:  # если текст рецепта достаточной длины
+            answer += '\n\n' + promo
+        else:
+            answer = random.choice(recipes)  # еще раз
+            answer += '\n\n' + promo
+        # Отсылаем юзеру сообщение в его чат
+        await bot.send_message(message.chat.id, answer)
+    elif len(user_question_en) > 1:  # если запрос содержит более одного слова
+        answer = search_recipe(user_question_en)
+        if len(answer) > 10:
+            answer += '\n\n' + promo
+            # посылаем юзеру найденный рецепт
+            await bot.send_message(message.chat.id, answer)
+        else:
+            await bot.send_message(message.chat.id, """К сожалению, я не знаю таких слов. Напишите мне:
+                         \n \"Рецепт\", чтобы получить случайный рецепт.
+                         \n "Пирог из яблок", если Вы ищете какое-то конкретное блюдо
+                         \n "Яйца яблоки бананы", в случае, если нужен совет, что приготовить из конкретных продуктов""")
+    else:
+        await bot.send_message(message.chat.id,
+                               "К сожалению, слишком короткий запрос. Напишите подробней: \"Пирог из яблок\"")
 
 
 @dp.message_handler()
