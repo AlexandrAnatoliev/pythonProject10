@@ -12,7 +12,7 @@
 # $ pip install schedule - установить внешние зависимости
 
 from aiogram import Bot, Dispatcher, executor, types
-from config import TOKEN_API, CHANNEL_NAME
+from config import TOKEN_API
 
 bot = Bot(TOKEN_API)
 dp = Dispatcher(bot)
@@ -21,6 +21,21 @@ dp = Dispatcher(bot)
 async def on_startup(_):  # функция принимает (_) аргумент!
     """Выполняется при включении бота"""
     print("Бот работает")
+
+
+@dp.message_handler()
+async def send_hello(message: types.Message):
+    """
+    Бот на bot.send_message() - отправляет пользователю HELLO:
+    если chat_id=message.chat.id:
+        в чат - если пользователь написал в чат
+        в личку - если пользователь написал боту
+    если chat_id=message.from_user.id:
+        в личку пользователю - в любом случае
+    """
+    await bot.send_message(chat_id=message.chat.id,
+                           text='HELLO')  # =id чата, куда пришло сообщение
+    # await bot.send_message(chat_id=message.from_user.id, text='HELLO')  # =id чата пользователя, приславшего сообщение
 
 
 if __name__ == "__main__":
