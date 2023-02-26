@@ -1,10 +1,10 @@
 # pythonProject 10
 
 # Бот на aiogram, ведущий телеграм-группу с рецептами
-
 # По нажатию кнопки бот присылает случайный рецепт в личку.
 # Осуществляет поиск рецепта запросу пользователя "пирог с курицей" или "яйца колбаса майонез".
 # Добавляет в текст рецепта рекламу.
+
 # Используем HTML-разметку, жирный шрифт, курсив, emoji - украшаем посты
 
 # $ pip install schedule - установить внешние зависимости
@@ -194,13 +194,17 @@ async def handle_text(message: types.Message):
             answer = random.choice(recipes)  # еще раз
             answer += '\n\n' + promo
         # Отсылаем юзеру сообщение в его чат
-        await bot.send_message(message.chat.id, answer)
+        await bot.send_message(message.chat.id,
+                               answer,
+                               parse_mode='HTML')
     elif len(user_question_en) > 1:  # если запрос содержит более одного слова
         answer = search_recipe(user_question_en)
         if len(answer) > 10:
             answer += '\n\n' + promo
             # посылаем юзеру найденный рецепт
-            await bot.send_message(message.chat.id, answer)
+            await bot.send_message(message.chat.id,
+                                   answer,
+                                   parse_mode='HTML')
         else:
             await bot.send_message(message.chat.id, """К сожалению, я не знаю таких слов. Напишите мне:
                          \n \"Рецепт\", чтобы получить случайный рецепт.
