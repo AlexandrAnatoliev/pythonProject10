@@ -1,6 +1,7 @@
 # pythonProject 10
 
-# Бот на aiogram, ведущий телеграм-канал с рецептами
+# Бот на aiogram, ведущий телеграм-группу с рецептами
+
 # Бот получает список рецептов из файла, создает словарь и рецепты по очереди (с рекламой!!!) и с фото блюда
 # через случайные период времени постит в канал
 # Для этого нам нужно создать свой канал в Telegram,
@@ -21,6 +22,23 @@ dp = Dispatcher(bot)
 async def on_startup(_):  # функция принимает (_) аргумент!
     """Выполняется при включении бота"""
     print("Бот работает")
+
+
+# Команда start
+@dp.message_handler(commands=["start"])
+async def start(message: types.Message):
+    """
+    По команде создает кнопку "Рецепт" чате (в личке или группе) и выводит приветственное сообщение
+    :param message: /start
+    :return:
+    """
+    # Добавляем кнопку
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
+    item1 = types.KeyboardButton("Рецепт")
+    markup.add(item1)
+    await bot.send_message(message.chat.id,
+                     'Нажми: \n"Рецепт", чтобы получить случайный рецепт или "Пирог из яблок", если Вы ищете какое-то конкретное блюдо',
+                     reply_markup=markup)
 
 
 @dp.message_handler()
