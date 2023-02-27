@@ -252,5 +252,8 @@ async def handle_text(message: types.Message):
 
 
 if __name__ == "__main__":
-    executor.start_polling(dp, on_startup=on_startup)
+    executor.start_polling(dp,
+                           on_startup=on_startup,
+                           skip_updates=True)
+    # skip_updates=True - бот проигнорирует сообщения, которые появились в чате за время его бездействия
     # прописываем аргумент on_startup=on_startup, чтобы функция on_startup(_) выполнялась при включении бота
