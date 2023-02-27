@@ -186,10 +186,10 @@ async def start(message: types.Message):
     """
     # Добавляем кнопку
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True)
-    item1 = types.KeyboardButton("Рецепт")
+    item1 = types.KeyboardButton("▶️ Рецепт")
     markup.add(item1)
     await bot.send_message(message.chat.id,
-                           text="Нажмите \"<em>Рецепт</em>\", чтобы получить случайный рецепт или напишите свой вопрос, (\"<em>Пирог из яблок</em>\"), если Вы ищете какое-то конкретное блюдо",
+                           text="Нажмите \"<em>Рецепт</em>\"⬇️⬇️⬇️, чтобы получить случайный рецепт или напишите свой вопрос, (\"<em>Пирог из яблок</em>\"), если Вы ищете какое-то конкретное блюдо",
                            parse_mode='HTML',
                            reply_markup=markup)
     await message.delete()
