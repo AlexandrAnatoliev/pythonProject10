@@ -189,7 +189,8 @@ async def start(message: types.Message):
     item1 = types.KeyboardButton("Рецепт")
     markup.add(item1)
     await bot.send_message(message.chat.id,
-                           'Нажми: \n"Рецепт", чтобы получить случайный рецепт или "Пирог из яблок", если Вы ищете какое-то конкретное блюдо',
+                           text="Нажмите \"<em>Рецепт</em>\", чтобы получить случайный рецепт или напишите свой вопрос, (\"<em>Пирог из яблок</em>\"), если Вы ищете какое-то конкретное блюдо",
+                           parse_mode='HTML',
                            reply_markup=markup)
     await message.delete()
 
