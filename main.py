@@ -13,6 +13,11 @@ import random
 from aiogram import Bot, Dispatcher, executor, types
 from config import TOKEN_API
 
+HELP_COMMAND = """
+<em><b>/start</b> - начать работу с ботом</em>
+<em><b>/help</b> - список команд</em>
+"""
+
 try:
     # Загружаем список с рекламными объявлениями из файла promotions.txt
     try:  # этот блок не прерывает работу программы
@@ -186,6 +191,19 @@ async def start(message: types.Message):
     await bot.send_message(message.chat.id,
                            'Нажми: \n"Рецепт", чтобы получить случайный рецепт или "Пирог из яблок", если Вы ищете какое-то конкретное блюдо',
                            reply_markup=markup)
+    await message.delete()
+
+
+@dp.message_handler(commands='help')
+async def command(message: types.Message):
+    """
+    По команде выводит список команд
+    :param message: /help
+    :return:
+    """
+    await message.reply(text=HELP_COMMAND,
+                        parse_mode='HTML')
+    await message.delete()
 
 
 # Получает сообщение от юзера и формирует ему ответ
