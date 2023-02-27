@@ -157,6 +157,20 @@ def get_question(question_in):
     return eng_question, ru_question
 
 
+def add_html_tags(recipe):
+    """
+    Добавляем HTML разметку в текст рецепта
+    :param recipe: рецепт str
+    :return: рецепт str
+    """
+    recipe = "<b>" + recipe
+    if "ИНГРЕДИЕНТЫ:" in recipe:
+        recipe = recipe.replace("ИНГРЕДИЕНТЫ:", "Ингредиенты</b><em>")
+    if "РЕЦЕПТ:" in recipe:
+        recipe = recipe.replace("РЕЦЕПТ:", "</em><b>Рецепт</b>")
+    return recipe
+
+
 # Команда start
 @dp.message_handler(commands=["start"])
 async def start(message: types.Message):
@@ -188,10 +202,12 @@ async def handle_text(message: types.Message):
         # print(r_list.index(recipes))  # выводит номер списка с рецептами для проверки
 
         answer = random.choice(recipes)  # случайный рецепт
+        answer = add_html_tags(answer)  # добавляем HTML разметку в рецепт
         if len(answer) > 10:  # если текст рецепта достаточной длины
             answer += '\n\n' + promo
         else:
             answer = random.choice(recipes)  # еще раз
+            answer = add_html_tags(answer)  # добавляем HTML разметку в рецепт
             answer += '\n\n' + promo
         # Отсылаем юзеру сообщение в его чат
         await bot.send_message(message.chat.id,
@@ -199,6 +215,7 @@ async def handle_text(message: types.Message):
                                parse_mode='HTML')
     elif len(user_question_en) > 1:  # если запрос содержит более одного слова
         answer = search_recipe(user_question_en)
+        answer = add_html_tags(answer)  # добавляем HTML разметку в рецепт
         if len(answer) > 10:
             answer += '\n\n' + promo
             # посылаем юзеру найденный рецепт
@@ -213,21 +230,6 @@ async def handle_text(message: types.Message):
     else:
         await bot.send_message(message.chat.id,
                                "К сожалению, слишком короткий запрос. Напишите подробней: \"Пирог из яблок\"")
-
-
-@dp.message_handler()
-async def send_hello(message: types.Message):
-    """
-    Бот на bot.send_message() - отправляет пользователю HELLO:
-    если chat_id=message.chat.id:
-        в чат - если пользователь написал в чат
-        в личку - если пользователь написал боту
-    если chat_id=message.from_user.id:
-        в личку пользователю - в любом случае
-    """
-    await bot.send_message(chat_id=message.chat.id,
-                           text='HELLO')  # =id чата, куда пришло сообщение
-    # await bot.send_message(chat_id=message.from_user.id, text='HELLO')  # =id чата пользователя, приславшего сообщение
 
 
 if __name__ == "__main__":
